@@ -12,9 +12,9 @@ def loss_fn(y_true, y_pred):
     return 1/np.log(2) * keras.losses.binary_crossentropy(y_true, y_pred)
 
 def strided_app(a, L, S):  # Window len = L, Stride len/stepsize = S
-        nrows = ((a.size - L) // S) + 1
-        n = a.strides[0]
-        return np.lib.stride_tricks.as_strided(a, shape=(nrows, L), strides=(S * n, n), writeable=False)
+    nrows = ((a.size - L) // S) + 1
+    n = a.strides[0]
+    return np.lib.stride_tricks.as_strided(a, shape=(nrows, L), strides=(S * n, n), writeable=False)
 
 def FC(time_steps):
     model = Sequential()
