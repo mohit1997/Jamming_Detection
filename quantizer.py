@@ -1,6 +1,28 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 window_size = 500
+
+def gen_data(p, SNR, N):
+	x = np.random.choice([-1, 1], size=(N, 1), p=[p, 1-p])
+
+	b = np.random.choice([-1, 1], size=(N, 1), p=[0.5, 0.5])
+
+	unscaled_z1 = np.random.normal(size=(N, 1))
+	unscaled_z2 = np.random.normal(size=(N, 1))
+
+	pwrx = np.sqrt(np.sum(x**2))
+	pwrz1 = np.sqrt(np.sum(unscaled_z1**2))
+	pwrz2 = np.sqrt(np.sum(unscaled_z2**2))
+	scalefactor1 = pwrx/pwrz1/SNR
+	scalefactor2 = pwrx/pwrz2/SNR
+
+	y1 = x + unscaled_z1*scalefactor1
+	y2 = np.multiply(x, b) + unscaled_z2*scalefactor2
+
+	y = np.hstack([y1, y2])
+
+	return y
 
 def strided_app(a, L, S):  # Window len = L, Stride len/stepsize = S
 	nrows = ((a.size - L) // S) + 1
@@ -25,19 +47,30 @@ def preprocess(data):
 	return X, Y
 
 def main():
-	data = np.load('data.npy')
+	p_list = np.linspace(0+1e-8, 0.5, num=20)
+	acc_list = []
+	for p in p_list:
+		data = gen_data(p=p, SNR=1, N=100000)
 
-	X, Y = preprocess(data)
-	tmp = X
-	tmp[X==-1] = 0
-	p = np.sum(X, axis=1)*1.0/window_size
-	print(p)
-	tmp = p
-	tmp[p>0.55] = 1
-	tmp[p<0.55] = 0
-	print(tmp)
-	acc = np.sum(np.abs(Y.reshape(-1)-tmp))/len(Y)
-	print(acc)
+		X, Y = preprocess(data)
+		tmp = X
+		tmp[X==-1] = 0
+		prob = np.sum(X, axis=1)*1.0/window_size
+		print(prob)
+		tmp = prob
+		thresh = (0.5 + (1-p))/2.0
+		tmp[prob>thresh] = 1
+		tmp[prob<thresh] = 0
+		print(tmp)
+		err = np.sum(np.abs(Y.reshape(-1)-tmp))/len(Y)
+		print(err)
+		acc_list.append(1 - err)
+
+	plt.plot(p_list, acc_list)
+	plt.xlabel('Input probability distribution')
+	plt.ylabel('Attack detection accuracy')
+	plt.title('Input distribution vs Detection')
+	plt.savefig('Accuracy.png')
 
 
 
