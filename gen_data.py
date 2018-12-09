@@ -5,6 +5,7 @@ np.random.seed(0)
 p = 0.4
 SNR = 4.0
 N = 20000
+error = np.random.normal(size=(N, 1))
 
 x = np.random.choice([-1, 1], size=(N, 1), p=[p, 1-p])
 
@@ -20,7 +21,7 @@ scalefactor1 = pwrx/pwrz1/SNR
 scalefactor2 = pwrx/pwrz2/SNR
 
 y1 = x + unscaled_z1*scalefactor1
-y2 = np.multiply(x, b) + unscaled_z2*scalefactor2
+y2 = np.multiply(x, b)*(1+error) + unscaled_z2*scalefactor2
 
 y = np.hstack([y1, y2])
 

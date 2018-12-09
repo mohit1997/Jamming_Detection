@@ -48,28 +48,32 @@ def preprocess(data):
 
 def main():
 	p_list = np.linspace(0+1e-8, 0.5, num=20)
-	acc_list = []
-	for p in p_list:
-		data = gen_data(p=p, SNR=1, N=100000)
+	for snr in [1, 2, 4, 8, 16]:
+		acc_list = []
+		for p in p_list:
+			data = gen_data(p=p, SNR=snr, N=100000)
 
-		X, Y = preprocess(data)
-		tmp = X
-		tmp[X==-1] = 0
-		prob = np.sum(X, axis=1)*1.0/window_size
-		print(prob)
-		tmp = prob
-		thresh = (0.5 + (1-p))/2.0
-		tmp[prob>thresh] = 1
-		tmp[prob<thresh] = 0
-		print(tmp)
-		err = np.sum(np.abs(Y.reshape(-1)-tmp))/len(Y)
-		print(err)
-		acc_list.append(1 - err)
+			X, Y = preprocess(data)
+			tmp = X
+			tmp[X==-1] = 0
+			prob = np.sum(X, axis=1)*1.0/window_size
+			print(prob)
+			tmp = prob
+			thresh = (0.5 + (1-p))/2.0
+			tmp[prob>thresh] = 1
+			tmp[prob<thresh] = 0
+			print(tmp)
+			err = np.sum(np.abs(Y.reshape(-1)-tmp))/len(Y)
+			print(err)
+			acc_list.append(1 - err)
 
-	plt.plot(p_list, acc_list)
+		lab = "SNR = " + str(snr) 
+		plt.plot(p_list, acc_list, label=lab)
+
 	plt.xlabel('Input probability distribution')
 	plt.ylabel('Attack detection accuracy')
 	plt.title('Input distribution vs Detection')
+	plt.legend()
 	plt.savefig('Accuracy.png')
 
 

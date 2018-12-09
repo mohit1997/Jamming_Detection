@@ -28,8 +28,8 @@ def FC(time_steps):
 
 def LSTM(time_steps):
     model = Sequential()
-    # model.add(TimeDistributed(Dense(4), input_shape=(time_steps,1)))
-    model.add(keras.layers.Conv1D(filters=5, kernel_size=5, padding='same', activation='relu', input_shape=(time_steps, 1)))
+    model.add(TimeDistributed(Dense(4), input_shape=(time_steps,1)))
+    # model.add(keras.layers.Conv1D(filters=5, kernel_size=5, padding='same', activation='relu', input_shape=(time_steps, 1)))
     model.add(Bidirectional(CuDNNLSTM(8, stateful=False, return_sequences=False, kernel_regularizer=regularizers.l2(0.1))))
     # model.add(Bidirectional(CuDNNGRU(32, stateful=False, return_sequences=False, kernel_regularizer=regularizers.l2(0.1))))
     model.add(Dense(4, activation='relu'))
