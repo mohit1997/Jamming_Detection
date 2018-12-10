@@ -2,9 +2,9 @@ import numpy as np
 
 np.random.seed(0)
 
-p = 0.4
-SNR = 1.0
-N = 100000
+p = 0.4 # Input Probability Distribution Followed
+SNR = 1.0 # SNR of the both the channels
+N = 100000 # Number of samples transmitted from each channel
 error = np.random.normal(size=(N, 1))
 
 x = np.random.choice([-1, 1], size=(N, 1), p=[p, 1-p])
