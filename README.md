@@ -16,7 +16,7 @@ N = 100000 # Number of samples transmitted from each channel
 
 3. Run `python train.py`
 
-Requirements
+## Requirements
 1. Python 2/3
 2. Matplotlib
 3. Tensorflow 1.8 (GPU/CPU)
