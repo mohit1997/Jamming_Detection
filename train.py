@@ -19,9 +19,12 @@ def strided_app(a, L, S):  # Window len = L, Stride len/stepsize = S
 def FC(time_steps):
     model = Sequential()
     init = keras.initializers.lecun_uniform(seed=0)
-    model.add(Dense(64, input_shape=(time_steps,), activation='relu', kernel_initializer=init, kernel_regularizer=regularizers.l2(0.1)))
+    # , kernel_regularizer=regularizers.l2(0.1)
+    model.add(Dense(128, input_shape=(time_steps,), activation='relu', kernel_initializer=init))
     # model.add(Dropout(rate=0.3))
-    model.add(Dense(32, activation='relu', kernel_initializer=init, kernel_regularizer=regularizers.l2(0.1)))
+    # model.add(Dense(64, activation='relu', kernel_initializer=init))
+    model.add(Dense(32, activation='relu', kernel_initializer=init))
+    model.add(Dense(16, activation='relu', kernel_initializer=init))
     # model.add(Dropout(rate=0.3))
     model.add(Dense(1, activation='sigmoid'))
     return model
@@ -30,7 +33,7 @@ def LSTM(time_steps):
     model = Sequential()
     model.add(TimeDistributed(Dense(4), input_shape=(time_steps,1)))
     # model.add(keras.layers.Conv1D(filters=5, kernel_size=5, padding='same', activation='relu', input_shape=(time_steps, 1)))
-    model.add(Bidirectional(CuDNNLSTM(8, stateful=False, return_sequences=False, kernel_regularizer=regularizers.l2(0.1))))
+    model.add(Bidirectional(CuDNNLSTM(16, stateful=False, return_sequences=False)))
     # model.add(Bidirectional(CuDNNGRU(32, stateful=False, return_sequences=False, kernel_regularizer=regularizers.l2(0.1))))
     model.add(Dense(4, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
@@ -38,7 +41,7 @@ def LSTM(time_steps):
 
 def fit_model(X, Y, bs, nb_epoch, model):
     y = Y
-    optim = keras.optimizers.Adam(lr=1e-3, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=0, amsgrad=False)
+    optim = keras.optimizers.Adam(lr=1e-3, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=0, amsgrad=False, clipnorm=0.05)
     model.compile(loss=loss_fn, optimizer=optim, metrics=['acc'])
     # checkpoint = ModelCheckpoint("wts", monitor='loss', verbose=1, save_best_only=True, mode='min', save_weights_only=True)
     csv_logger = CSVLogger("log", append=True, separator=';')
@@ -63,9 +66,6 @@ def gen_data(data):
 
     return X, Y
 
-
-
-
 def main():
     data = np.load('data.npy')
     X, Y = gen_data(data)
@@ -77,12 +77,7 @@ def main():
     ##LSTM
     X = np.expand_dims(X, -1)
     model = LSTM(window_size)
-    fit_model(X, Y, bs=64, nb_epoch=10, model=model)
-
-
-
-
-
+    fit_model(X, Y, bs=512, nb_epoch=10, model=model)
 
 if __name__ == "__main__":
 	main()

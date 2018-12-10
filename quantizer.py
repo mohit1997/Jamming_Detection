@@ -52,7 +52,6 @@ def main():
 		acc_list = []
 		for p in p_list:
 			data = gen_data(p=p, SNR=snr, N=100000)
-
 			X, Y = preprocess(data)
 			tmp = X
 			tmp[X==-1] = 0
