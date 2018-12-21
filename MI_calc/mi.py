@@ -29,8 +29,6 @@ def gen_data(p, SNR, N, A=1):
 	else:
 		y2 = x + unscaled_z2*scalefactor2
 
-	
-
 	return x, y1, y2
 
 def strided_app(a, L, S):  # Window len = L, Stride len/stepsize = S
