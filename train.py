@@ -41,7 +41,7 @@ def LSTM(time_steps):
 
 def fit_model(X, Y, bs, nb_epoch, model):
     y = Y
-    optim = keras.optimizers.Adam(lr=1e-3, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=0, amsgrad=False, clipnorm=0.05)
+    optim = keras.optimizers.Adam(lr=1e-3, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=0, amsgrad=False, clipnorm=0.1)
     model.compile(loss=loss_fn, optimizer=optim, metrics=['acc'])
     # checkpoint = ModelCheckpoint("wts", monitor='loss', verbose=1, save_best_only=True, mode='min', save_weights_only=True)
     csv_logger = CSVLogger("log", append=True, separator=';')
@@ -75,8 +75,8 @@ def main():
     model = FC(window_size)
 
     ##LSTM
-    X = np.expand_dims(X, -1)
-    model = LSTM(window_size)
+    # X = np.expand_dims(X, -1)
+    # model = LSTM(window_size)
     fit_model(X, Y, bs=512, nb_epoch=10, model=model)
 
 if __name__ == "__main__":

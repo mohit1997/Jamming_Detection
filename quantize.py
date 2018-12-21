@@ -47,8 +47,8 @@ def preprocess(data):
 	return X, Y
 
 def main():
-	p_list = np.linspace(0+1e-8, 0.5, num=20)
-	for snr in [0.1, 0.2, 0.4, 0.6, 0.8]:
+	p_list = [0.1]
+	for snr in [0.3, 0.5, 0.7, 0.9]:
 		acc_list = []
 		for p in p_list:
 			data = gen_data(p=p, SNR=snr, N=100000)
@@ -56,24 +56,16 @@ def main():
 			tmp = X
 			tmp[X==-1] = 0
 			prob = np.sum(X, axis=1)*1.0/window_size
-			print(prob)
+			# print(prob)
 			tmp = prob
 			thresh = (0.5 + (1-p))/2.0
+			thresh = 0.55
 			tmp[prob>thresh] = 1
 			tmp[prob<thresh] = 0
-			print(tmp)
+			# print(tmp)
 			err = np.sum(np.abs(Y.reshape(-1)-tmp))/len(Y)
-			print(err)
+			print(snr, err)
 			acc_list.append(1 - err)
-
-		lab = "SNR = " + str(snr) 
-		plt.plot(p_list, acc_list, label=lab)
-
-	plt.xlabel('Input probability distribution')
-	plt.ylabel('Attack detection accuracy')
-	plt.title('Input distribution vs Detection')
-	plt.legend()
-	plt.savefig('Accuracy_low.png')
 
 
 
