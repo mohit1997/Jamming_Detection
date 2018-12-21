@@ -81,7 +81,7 @@ def main():
 	plt.ylabel('Attack detection accuracy')
 	plt.title('Input distribution vs Detection')
 	plt.legend()
-	plt.savefig('Accuracyv3_low.png')
+	plt.savefig('figs/Accuracyv3_low.png')
 
 
 

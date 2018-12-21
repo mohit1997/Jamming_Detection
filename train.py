@@ -67,7 +67,7 @@ def gen_data(data):
     return X, Y
 
 def main():
-    data = np.load('data.npy')
+    data = np.load('data/data.npy')
     X, Y = gen_data(data)
 
     print(X.shape, Y.shape)

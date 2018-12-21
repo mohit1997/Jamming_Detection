@@ -25,4 +25,4 @@ y2 = np.multiply(x, b)*(1) + unscaled_z2*scalefactor2
 
 y = np.hstack([y1, y2])
 
-np.save('data', y)
+np.save('data/data', y)
