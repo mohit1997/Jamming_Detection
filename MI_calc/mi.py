@@ -55,8 +55,8 @@ def preprocess(data):
 
 def main():
 	bin_size = 20
-	p_list = [0.5]
-	for snr in [0.3, 0.5, 0.7, 0.9]:
+	p_list = [0.1]
+	for snr in [1.0]:
 		acc_list = []
 		for p in p_list:
 			x, y1, y2 = gen_data(p=p, SNR=snr, N=1000000, A=0)
