@@ -10,21 +10,21 @@ def fc_att(x):
 	flat = tf.contrib.layers.flatten(inp)
 	y1, y2 = tf.unstack(x, num=channels, axis=2)
 
-	h1 = tf.layers.dense(flat, 64, activation=tf.nn.relu)
-	h2 = tf.layers.dense(h1, 16, activation=tf.nn.relu)
-	att = tf.layers.dense(h2, 1, activation=tf.nn.sigmoid)
+	h1 = tf.layers.dense(flat, 128, activation=tf.nn.relu)
+	h2 = tf.layers.dense(h1, 64, activation=tf.nn.relu)
+	att = tf.layers.dense(h2, 1)
 
-	y2_activated = y2 * att
+	y2_activated = y2 * tf.nn.sigmoid(att)
 
 	activated_inp = tf.concat([y1, y2_activated], axis=1)
 
-	hidden1 = tf.layers.dense(activated_inp, 128, activation=tf.nn.relu)
-	hidden2 = tf.layers.dense(hidden1, 32, activation=tf.nn.relu)
+	hidden1 = tf.layers.dense(activated_inp, 256, activation=tf.nn.relu)
+	hidden2 = tf.layers.dense(hidden1, 64, activation=tf.nn.relu)
 
 	logits = tf.layers.dense(hidden2, 1)
 	predictions = tf.nn.sigmoid(logits)
 
-	return logits, predictions
+	return logits, predictions, att
 
 
 def fc(x):

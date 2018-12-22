@@ -72,11 +72,11 @@ def main():
 
     print(X.shape, Y.shape)
 
-    model = FC(window_size)
+    # model = FC(window_size)
 
     ##LSTM
-    # X = np.expand_dims(X, -1)
-    # model = LSTM(window_size)
+    X = np.expand_dims(X, -1)
+    model = LSTM(window_size)
     fit_model(X, Y, bs=512, nb_epoch=10, model=model)
 
 if __name__ == "__main__":
