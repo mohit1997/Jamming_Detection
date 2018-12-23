@@ -51,6 +51,7 @@ def gen_and_process(p, SNR, N, window):
 	inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=0)
 	X_noattack, Y_noattack = preprocess(inp_symbols, out_symbols, window=window)
 
+	# We label attack as 0 and no attack as 1. This would help us to use this as attention
 	zeros = np.zeros((len(X_attack), 1))
 	ones = np.ones((len(X_noattack), 1))
 

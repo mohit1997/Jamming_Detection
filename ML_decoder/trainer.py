@@ -1,11 +1,13 @@
 import numpy as np
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Bidirectional, Dropout, TimeDistributed, BatchNormalization
+from keras.layers import Dense, Bidirectional, Dropout, TimeDistributed, BatchNormalization, GaussianNoise
 from keras.layers import LSTM, GRU, Flatten, Conv1D, CuDNNLSTM, CuDNNGRU, MaxPooling1D
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras import regularizers
 from utils import *
+
+window = 100
 
 def loss_fn(y_true, y_pred):
     return 1/np.log(2) * keras.losses.binary_crossentropy(y_true, y_pred)
@@ -19,14 +21,16 @@ def CONV_Model(time_steps):
     # model.add(Conv1D(1, 3, strides=1, activation='relu'))
     model.add(Flatten(input_shape=(time_steps, 2)))
     # model.add(Dropout(rate=0.3))
-    model.add(Dense(64, activation='relu', kernel_initializer=init))
-    # model.add(Dense(64, activation='relu', kernel_initializer=init))
+    model.add(GaussianNoise(stddev=0.5))
+    model.add(Dense(128, activation='relu'))
+    model.add(GaussianNoise(stddev=0.1))
+    # model.add(Dense(64, activation='relu')
     # model.add(BatchNormalization())
     # model.add(Dropout(rate=0.3))
-    model.add(Dense(32, activation='relu', kernel_initializer=init))
+    model.add(Dense(64, activation='relu'))
     # model.add(BatchNormalization())
     # model.add(Dropout(rate=0.3))
-    model.add(Dense(16, activation='relu', kernel_initializer=init))
+    # model.add(Dense(16, activation='relu', kernel_initializer=init))
     # model.add(Dropout(rate=0.3))
     model.add(Dense(1, activation='sigmoid'))
     return model
@@ -44,18 +48,23 @@ def fit_model(X, Y, bs, nb_epoch, model):
     model.fit(X, y, epochs=nb_epoch, batch_size=bs, verbose=1, validation_split=0.3, shuffle=True, callbacks=callbacks_list)
 
 def main():
-    X, Y = gen_and_process(p=0.4, SNR=1.0, N=100000, window=500)
+    X, Y, A = gen_and_process(p=0.5, SNR=1.0, N=100000, window=window)
     Y = Y[:, -1:]
     # X = X[:, :, 0:1]
 
     print(X.shape, Y.shape)
 
-    model = CONV_Model(time_steps=500)
+    model = CONV_Model(time_steps=window)
 
     ##LSTM
     # X = np.expand_dims(X, -1)
     # model = LSTM(window_size)
-    fit_model(X, Y, bs=512, nb_epoch=10, model=model)
+
+    ## For Decoding
+    # fit_model(X, Y, bs=512, nb_epoch=10, model=model)
+
+    ## For Attack Detection
+    fit_model(X, A, bs=512, nb_epoch=10, model=model)
 
     np.save('input_symbols', Y)
     Y_cap = model.predict(X, batch_size=1024)

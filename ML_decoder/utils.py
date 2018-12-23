@@ -45,16 +45,20 @@ def preprocess(inp, out, window):
 	return X, Y
 
 def gen_and_process(p, SNR, N, window):
-	inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=0)
+	inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=1)
 	X_attack, Y_attack = preprocess(inp_symbols, out_symbols, window=window)
 
-	inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=1)
+	inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=0)
 	X_noattack, Y_noattack = preprocess(inp_symbols, out_symbols, window=window)
+
+	zeros = np.zeros((len(X_attack), 1))
+	ones = np.ones((len(X_noattack), 1))
 
 	X = np.concatenate([X_attack, X_noattack], axis=0)
 	Y = np.concatenate([Y_attack, Y_noattack], axis=0)
+	A = np.concatenate([zeros, ones], axis=0)
 
-	return X, Y
+	return X, Y, A
 
 
 
