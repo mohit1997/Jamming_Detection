@@ -7,6 +7,8 @@ from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras import regularizers
 from utils import *
 
+import matplotlib.pyplot as plt
+
 window = 100
 
 def loss_fn(y_true, y_pred):
@@ -45,7 +47,30 @@ def fit_model(X, Y, bs, nb_epoch, model):
 
     # callbacks_list = [checkpoint, csv_logger]#, early_stopping]
     callbacks_list = [csv_logger]
-    model.fit(X, y, epochs=nb_epoch, batch_size=bs, verbose=1, validation_split=0.3, shuffle=True, callbacks=callbacks_list)
+    hist = model.fit(X, y, epochs=nb_epoch, batch_size=bs, verbose=1, validation_split=0.3, shuffle=True, callbacks=callbacks_list)
+    return hist
+
+
+def plot_SNR():
+    SNRlist = [0.5, 1.0, 2.0, 3.0, 4.0]
+    windowlist = [50, 100, 150, 500]
+    for snr in SNRlist:
+        acclist = []
+        for w in windowlist:
+            X, Y, A = gen_and_process(p=0.5, SNR=snr, N=100000, window=w)
+            Y = Y[:, -1:]
+            model = CONV_Model(time_steps=w)
+            h = fit_model(X, A, bs=512, nb_epoch=5, model=model)
+            val_max = np.max(h.history['val_acc'])
+            acclist.append(val_max)
+        lab = "SNR = " + str(snr)
+        plt.plot(windowlist, acclist, label=lab)
+    plt.xlabel("window sizes")
+    plt.ylabel("Attack Detection Accuracy")
+    plt.legend()
+    plt.show()
+
+
 
 def main():
     X, Y, A = gen_and_process(p=0.5, SNR=1.0, N=100000, window=window)
@@ -64,11 +89,14 @@ def main():
     # fit_model(X, Y, bs=512, nb_epoch=10, model=model)
 
     ## For Attack Detection
-    fit_model(X, A, bs=512, nb_epoch=10, model=model)
+    fit_model(X, A, bs=512, nb_epoch=5, model=model)
 
     np.save('input_symbols', Y)
     Y_cap = model.predict(X, batch_size=1024)
     np.save('predictions', Y_cap)
 
+
+
 if __name__ == "__main__":
-	main()
+	# main()
+    plot_SNR()
