@@ -70,10 +70,8 @@ def plot_SNR():
     plt.legend()
     plt.show()
 
-
-
 def main():
-    X, Y, A = gen_and_process(p=0.5, SNR=1.0, N=100000, window=window)
+    X, Y, A = gen_and_process(p=0.4, SNR=0.0, N=100000, window=window)
     Y = Y[:, -1:]
     # X = X[:, :, 0:1]
 
@@ -98,5 +96,5 @@ def main():
 
 
 if __name__ == "__main__":
-	# main()
-    plot_SNR()
+	main()
+    # plot_SNR()
