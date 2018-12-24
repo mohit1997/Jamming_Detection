@@ -1,4 +1,5 @@
 import numpy as np
+from keras import backend as K
 
 def gen_data(p, SNR, N, A=1, h1=1.0, h2=1.0):
 	R = 10**(0.05*SNR)
@@ -60,6 +61,41 @@ def gen_and_process(p, SNR, N, window):
 	A = np.concatenate([zeros, ones], axis=0)
 
 	return X, Y, A
+
+def fpr(y_pred, y_true):
+    """
+    param:
+    y_pred - Predicted labels
+    y_true - True labels 
+    """
+    y_pred = K.round(y_pred)
+    y_true = K.round(y_true)
+    neg_y_true = 1 - y_true
+    neg_y_pred = 1 - y_pred
+    fp = K.sum(neg_y_true * y_pred)
+    fn = K.sum(y_true * neg_y_pred)
+    tn = K.sum(neg_y_true * neg_y_pred)
+    tp = K.sum(y_true * y_pred)
+    fpr = fp/(tn + fp + K.epsilon())*100
+    # fpr = (fp + fn)/(tn + fp + tp + fn)*100
+    return fpr
+
+def fnr(y_pred, y_true):
+    """
+    param:
+    y_pred - Predicted labels
+    y_true - True labels 
+    """
+    y_pred = K.round(y_pred)
+    y_true = K.round(y_true)
+    neg_y_true = 1 - y_true
+    neg_y_pred = 1 - y_pred
+    fp = K.sum(neg_y_true * y_pred)
+    fn = K.sum(y_true * neg_y_pred)
+    tn = K.sum(neg_y_true * neg_y_pred)
+    tp = K.sum(y_true * y_pred)
+    fnr = fn/(fn + tp + K.epsilon())*100
+    return fnr
 
 
 
