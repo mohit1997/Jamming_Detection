@@ -90,8 +90,8 @@ def main():
 
 		sess.run(tf.local_variables_initializer())
 		val_acc, val_loss, val_det_acc, FP_rate, FN_rate = sess.run([acc, loss, det_acc, FPop, FNop], feed_dict={x: x_test, y: y_test, a: a_test, is_train: False})
-		FP_rate = 2*FP_rate/len(x_test)*100
-		FN_rate = 2*FN_rate/len(x_test)*100
+		FP_rate = FP_rate/np.sum(a_test==0.0)*100
+		FN_rate = FN_rate/np.sum(a_test==1.0)*100
 		print("Epoch ", epoch, " Validation Accuracy ", val_acc, " Attack Detection Accuracy ", val_det_acc,  " Validation Loss ", val_loss, " False pos ", FP_rate, " False neg ", FN_rate)
 
 if __name__ == "__main__":

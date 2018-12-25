@@ -18,7 +18,7 @@ def fc_att(x, is_train):
 
 	h1 = tf.layers.dense(flat, 256, activation=tf.nn.relu)
 	h1 = gaussian_noise_layer(h1, std=0.2, is_train=is_train)
-	h2 = tf.layers.dense(h1, 128, activation=tf.nn.relu)
+	h2 = tf.layers.dense(h1, 256, activation=tf.nn.relu)
 	h2 = gaussian_noise_layer(h2, std=0.2, is_train=is_train)
 	att = tf.layers.dense(h2, 1)
 
@@ -28,7 +28,7 @@ def fc_att(x, is_train):
 
 	hidden1 = tf.layers.dense(activated_inp, 256, activation=tf.nn.relu)
 	hidden1 = gaussian_noise_layer(hidden1, std=0.2, is_train=is_train)
-	hidden2 = tf.layers.dense(hidden1, 128, activation=tf.nn.relu)
+	hidden2 = tf.layers.dense(hidden1, 256, activation=tf.nn.relu)
 	hidden2 = gaussian_noise_layer(hidden2, std=0.2, is_train=is_train)
 	logits = tf.layers.dense(hidden2, shp[1])
 	predictions = tf.nn.sigmoid(logits)
