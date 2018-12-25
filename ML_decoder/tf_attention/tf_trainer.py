@@ -30,12 +30,13 @@ def split(x, y, a, shuffle=True, f=0.3):
 	return train_x, train_y, train_a, test_x, test_y, test_a
 
 def main():
-	X, Y, A = gen_and_process(p=0.5, SNR=5.0, N=100000, window=window)
-	Y = Y[:, -1:]
+	X, Y, A = gen_and_process(p=0.5, SNR=0.0, N=100000, window=window)
+	# Y = Y[:, -1:]
+	Y = Y.reshape(-1, window)
 
 	# Input Placeholders
 	x = tf.placeholder(tf.float32, [None, window, 2], name='InputData')
-	y = tf.placeholder(tf.float32, [None, 1], name='LabelData')
+	y = tf.placeholder(tf.float32, [None, window], name='LabelData')
 	a = tf.placeholder(tf.float32, [None, 1], name='LabelAttack')
 	is_train = tf.placeholder(tf.bool, name="Training/Testing")
 
@@ -74,6 +75,10 @@ def main():
 		det_list = []
 		sess.run(tf.local_variables_initializer())
 		for batch_x, batch_y, batch_a in iterate_minibatches(x_train, y_train, a_train, batchsize=batch_size, shuffle=True):
+			ind = np.arange(batch_x.shape[1])
+			np.random.shuffle(ind)
+			batch_x = batch_x[:, ind]
+			batch_y = batch_y[:, ind]
 			_, accuracy, tr_loss, det_accuracy, FP_rate, FN_rate = sess.run([optimizer, acc, loss, det_acc, FPop, FNop], feed_dict={x: batch_x, y:batch_y, a: batch_a, is_train: True})
 			acc_list.append(accuracy)
 			loss_list.append(tr_loss)

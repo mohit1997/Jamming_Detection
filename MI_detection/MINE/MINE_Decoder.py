@@ -12,9 +12,9 @@ def lr(epoch):
     if epoch <300:
         return 1e-3
     if epoch <500:
-        return 1e-4
+        return 1e-3
     else:
-        return 5e-5
+        return 5e-4
 
 def gaussian_noise_layer(input_layer, std, is_train):
     noise = tf.random_normal(shape=tf.shape(input_layer), mean=0.0, stddev=std, dtype=tf.float32)
@@ -55,8 +55,15 @@ def main():
 
     ### Get MI
     mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel())[0]
-    print(mi_numerical)
-    mi = mi_numerical
+    print(mi_numerical, " during attack")
+    mia = mi_numerical
+
+    X, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100000, A=0)
+
+    ### Get MI
+    mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel())[0]
+    print(mi_numerical, " during no attack")
+    mina = mi_numerical
 
     Y1 = Y1.reshape(-1, 1)
     Y2 = Y2.reshape(-1, 1)
@@ -75,21 +82,32 @@ def main():
     sess.run(tf.global_variables_initializer())
 
     # train
-    MIs = []
+    MIAs = []
+    MINAs = []
     for epoch in range(n_epochs):
         
         # generate the data
         # x_sample=gen_x()
         # y_sample=gen_y(x_sample)
-        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=50, A=1)
+        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100, A=1)
         Y1 = Y1.reshape(-1, 1)
         Y2 = Y2.reshape(-1, 1)
         # perform the training step
-        feed_dict = {x_in:Y1, y_in:Y2, is_train: False, learning_rate: lr(epoch)}
+        feed_dict = {x_in:Y1, y_in:Y2, is_train: True, learning_rate: lr(epoch)}
+        neg_l, = sess.run([neg_loss], feed_dict=feed_dict)
+        
+        # save the loss
+        MIAs.append(-neg_l)
+
+        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100, A=0)
+        Y1 = Y1.reshape(-1, 1)
+        Y2 = Y2.reshape(-1, 1)
+        # perform the training step
+        feed_dict = {x_in:Y1, y_in:Y2, is_train: True, learning_rate: lr(epoch)}
         _, neg_l = sess.run([opt, neg_loss], feed_dict=feed_dict)
         
         # save the loss
-        MIs.append(-neg_l)
+        MINAs.append(-neg_l)
 
     feed_dict = {x_in:Y1, y_in:Y2, is_train: False}
     neg_l, = sess.run([neg_loss], feed_dict=feed_dict)
@@ -97,11 +115,13 @@ def main():
     print(-neg_l)
         
     fig, ax = plt.subplots()
-    ax.plot(range(len(MIs)), MIs, label='MINE estimate')
-    ax.plot([0, len(MIs)], [mi,mi], label='True Mutual Information')
+    ax.plot(range(len(MIAs)), MIAs, label='MINE estimate - Attack')
+    ax.plot(range(len(MINAs)), MINAs, label='MINE estimate - NoAttack')
+    ax.plot([0, len(MIAs)], [mia,mia], label='True Mutual Information - Attack')
+    ax.plot([0, len(MINAs)], [mina,mina], label='True Mutual Information - NoAttack')
     ax.set_xlabel('training steps')
     ax.legend(loc='best')
-    fig.savefig('MINE.png')
+    fig.savefig('MINE_both.png')
     fig.show()
 
 if __name__ == "__main__":

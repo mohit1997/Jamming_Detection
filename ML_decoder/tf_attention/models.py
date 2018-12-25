@@ -30,7 +30,7 @@ def fc_att(x, is_train):
 	hidden1 = gaussian_noise_layer(hidden1, std=0.2, is_train=is_train)
 	hidden2 = tf.layers.dense(hidden1, 128, activation=tf.nn.relu)
 	hidden2 = gaussian_noise_layer(hidden2, std=0.2, is_train=is_train)
-	logits = tf.layers.dense(hidden2, 1)
+	logits = tf.layers.dense(hidden2, shp[1])
 	predictions = tf.nn.sigmoid(logits)
 
 	return logits, predictions, att

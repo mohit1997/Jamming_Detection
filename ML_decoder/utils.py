@@ -76,7 +76,7 @@ def fpr(y_pred, y_true):
     fn = K.sum(y_true * neg_y_pred)
     tn = K.sum(neg_y_true * neg_y_pred)
     tp = K.sum(y_true * y_pred)
-    fpr = fp/(tn + fp + K.epsilon())*100
+    fpr = fp/(tn + fp + K.epsilon())*100.0
     # fpr = (fp + fn)/(tn + fp + tp + fn)*100
     return fpr
 
