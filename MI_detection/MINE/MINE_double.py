@@ -89,7 +89,7 @@ def main():
         # generate the data
         # x_sample=gen_x()
         # y_sample=gen_y(x_sample)
-        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100, A=1)
+        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=20, A=1)
         Y1 = Y1.reshape(-1, 1)
         Y2 = Y2.reshape(-1, 1)
         # perform the training step
@@ -99,7 +99,7 @@ def main():
         # save the loss
         MIAs.append(-neg_l)
 
-        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100, A=0)
+        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=20, A=0)
         Y1 = Y1.reshape(-1, 1)
         Y2 = Y2.reshape(-1, 1)
         # perform the training step

@@ -10,11 +10,11 @@ n_epochs = 1000
 
 def lr(epoch):
     if epoch <300:
-        return 1e-3
+        return 1e-2
     if epoch <500:
-        return 1e-4
+        return 1e-3
     else:
-        return 5e-5
+        return 1e-3
 
 def gaussian_noise_layer(input_layer, std, is_train):
     noise = tf.random_normal(shape=tf.shape(input_layer), mean=0.0, stddev=std, dtype=tf.float32)
@@ -25,7 +25,6 @@ def MINE(x_in, y_in, is_train, H, lr):
     
     # shuffle and concatenate
     y_shuffle = tf.random_shuffle(y_in)
-    print(len([x_in]*10))
     x_conc = tf.concat([x_in, x_in], axis=0)
     y_conc = tf.concat([y_in, y_shuffle], axis=0)
     
@@ -51,7 +50,7 @@ def MINE(x_in, y_in, is_train, H, lr):
 
 def main():
     ### Generate Data
-    X, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100000, A=1)
+    X, Y1, Y2 = gen_data(p=0.5, SNR=10.0, N=100000, A=0)
 
     ### Get MI
     mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel())[0]
@@ -76,16 +75,17 @@ def main():
 
     # train
     MIs = []
+    _, Y1, Y2 = gen_data(p=0.5, SNR=10.0, N=100, A=0)
+    Y1 = Y1.reshape(-1, 1)
+    Y2 = Y2.reshape(-1, 1)
+    indices = np.arange(len(Y1))
     for epoch in range(n_epochs):
-        
+        np.random.shuffle(indices)
         # generate the data
         # x_sample=gen_x()
         # y_sample=gen_y(x_sample)
-        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=50, A=1)
-        Y1 = Y1.reshape(-1, 1)
-        Y2 = Y2.reshape(-1, 1)
         # perform the training step
-        feed_dict = {x_in:Y1, y_in:Y2, is_train: False, learning_rate: lr(epoch)}
+        feed_dict = {x_in:Y1, y_in:Y2, is_train: True, learning_rate: lr(epoch)}
         _, neg_l = sess.run([opt, neg_loss], feed_dict=feed_dict)
         
         # save the loss
