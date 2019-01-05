@@ -32,6 +32,11 @@ def get_threshold(l1, l2):
 
     return thresh
 
+def get_min_threshold(l1, l2):
+    thresh = np.min(l2)
+
+    return thresh
+
 def gaussian_noise_layer(input_layer, std, is_train):
     noise = tf.random_normal(shape=tf.shape(input_layer), mean=0.0, stddev=std, dtype=tf.float32)
     output = tf.cond(is_train, lambda: input_layer + noise, lambda: input_layer)
@@ -148,7 +153,7 @@ def main(args):
     A_list = MIAs[-400:]
     NA_list = MINAs[-400:]
 
-    thresh = get_threshold(A_list, NA_list)
+    thresh = get_min_threshold(A_list, NA_list)
 
     print(-neg_l)
         
@@ -162,7 +167,7 @@ def main(args):
     ax.legend(loc='best')
     title = "SNR=" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
     ax.set_title(title)
-    path = "figs_check/MINE_shuffled" + title + ".png"
+    path = "figs_md/MINE_shuffled" + title + ".png"
     fig.savefig(path)
     # fig.show()
 
@@ -174,6 +179,7 @@ def main(args):
         feed_dict = {x_in:valY1, y_in:valY2, is_train: False}
         neg_l, = sess.run([neg_loss], feed_dict=feed_dict)
         MI = -neg_l
+        MINAs.append(MI)
         if MI < thresh:
             misdetections += 1
 
@@ -181,21 +187,27 @@ def main(args):
         feed_dict = {x_in:valY1, y_in:valY2, is_train: False}
         neg_l, = sess.run([neg_loss], feed_dict=feed_dict)
         MI = -neg_l
+        MIAs.append(MI)
         if MI > thresh:
             false_alrams += 1
 
     MR = misdetections*1.0 / test_points
     FAR = false_alrams*1.0 / test_points
 
+    name = "gen_MI/MIA-snr" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
+    np.save(name, np.array(MIAs))
+    name = "gen_MI/MINA-snr" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
+    np.save(name, np.array(MINAs))
+
     output = "SNR=" + str(snr) + " window=" + str(window) + " prob=" + str(prob) + " MR=" + str(MR) + " FAR" + str(FAR)
 
     print(output)
     res = [snr, window, prob, MR, FAR]
 
-     
-    # with open('results.csv', 'a') as myFile:
-    #     writer = csv.writer(myFile)
-    #     writer.writerow(res)
+    
+    with open('results_md.csv', 'a') as myFile:
+        writer = csv.writer(myFile)
+        writer.writerow(res)
 
     sess.close()
 

@@ -34,3 +34,7 @@ python MINE_Decoder.py -snr 0 -w 90
 python MINE_Decoder.py -snr 5 -w 90
 python MINE_Decoder.py -snr 10 -w 90
 python MINE_Decoder.py -snr 15 -w 90
+python MINE_Decoder.py -snr 0 -w 100
+python MINE_Decoder.py -snr 5 -w 100
+python MINE_Decoder.py -snr 10 -w 100
+python MINE_Decoder.py -snr 15 -w 100
