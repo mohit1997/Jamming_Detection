@@ -11,7 +11,7 @@ import csv
 import argparse
 
 
-n_epochs = 1000
+n_epochs = 10000
 
 def lr(epoch):
     if epoch <300:
@@ -33,7 +33,13 @@ def get_threshold(l1, l2):
     return thresh
 
 def get_min_threshold(l1, l2):
-    thresh = np.min(l2)
+    l1 = np.array(l1)
+    l1 = l1.reshape(-1)
+    lis = np.sort(l1)
+    num = int(len(l1)*0.001) + 1
+    print("Threshold Index ", num)
+    print(lis)
+    thresh = lis[-num]
 
     return thresh
 
@@ -150,25 +156,25 @@ def main(args):
     feed_dict = {x_in:Y1, y_in:Y2, is_train: False}
     neg_l, = sess.run([neg_loss], feed_dict=feed_dict)
 
-    A_list = MIAs[-400:]
-    NA_list = MINAs[-400:]
+    A_list = MIAs[600:]
+    NA_list = MINAs[600:]
 
     thresh = get_min_threshold(A_list, NA_list)
 
     print(-neg_l)
         
-    fig, ax = plt.subplots()
-    ax.plot(range(len(MIAs)), MIAs, label='MINE estimate - Attack')
-    ax.plot(range(len(MINAs)), MINAs, label='MINE estimate - NoAttack')
-    ax.plot([0, len(MIAs)], [mia,mia], label='True Mutual Information - Attack')
-    ax.plot([0, len(MIAs)], [thresh, thresh], label='Threshold for classification')
-    ax.plot([0, len(MINAs)], [mina,mina], label='True Mutual Information - NoAttack')
-    ax.set_xlabel('training steps')
-    ax.legend(loc='best')
-    title = "SNR=" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
-    ax.set_title(title)
-    path = "figs_md/MINE_shuffled" + title + ".png"
-    fig.savefig(path)
+    # fig, ax = plt.subplots()
+    # ax.plot(range(len(MIAs)), MIAs, label='MINE estimate - Attack')
+    # ax.plot(range(len(MINAs)), MINAs, label='MINE estimate - NoAttack')
+    # ax.plot([0, len(MIAs)], [mia,mia], label='True Mutual Information - Attack')
+    # ax.plot([0, len(MIAs)], [thresh, thresh], label='Threshold for classification')
+    # ax.plot([0, len(MINAs)], [mina,mina], label='True Mutual Information - NoAttack')
+    # ax.set_xlabel('training steps')
+    # ax.legend(loc='best')
+    # title = "SNR=" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
+    # ax.set_title(title)
+    # path = "figs_md/MINE_shuffled" + title + ".png"
+    # fig.savefig(path)
     # fig.show()
 
     misdetections = 0
@@ -181,7 +187,7 @@ def main(args):
         MI = -neg_l
         MINAs.append(MI)
         if MI < thresh:
-            misdetections += 1
+            false_alrams += 1
 
         _, valY1, valY2 = gen_data(p=prob, SNR=snr, N=window, A=1)
         feed_dict = {x_in:valY1, y_in:valY2, is_train: False}
@@ -189,7 +195,7 @@ def main(args):
         MI = -neg_l
         MIAs.append(MI)
         if MI > thresh:
-            false_alrams += 1
+            misdetections += 1
 
     MR = misdetections*1.0 / test_points
     FAR = false_alrams*1.0 / test_points
