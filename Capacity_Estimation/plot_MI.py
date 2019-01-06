@@ -8,13 +8,11 @@ print(df)
 snrs = np.unique(df['SNR'].values)
 for i in snrs:
 	temp = df.loc[df['SNR'] == i]
-	lab = "Iy1 - SNR=" + str(i)
-	plt.plot(temp['Prob'], temp['Iy1'], label=lab)
-	lab = "Iy1y2 - SNR=" + str(i)
-	plt.plot(temp['Prob'], temp['Iy1y2'], label=lab)
+	lab = "True MI - SNR=" + str(i)
+	plt.plot(temp['Prob'], 0.5*temp['Iy1'] + 0.5*temp['Iy1y2'], label=lab)
 
 plt.xlabel('Input Probability')
-plt.ylabel('Iy1 and Iy1y2')
+plt.ylabel('True MI')
 plt.legend()
 plt.savefig("MIideal_curve.png")
 plt.show()

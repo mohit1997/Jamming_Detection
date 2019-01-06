@@ -72,11 +72,6 @@ def Iy1y2(snr, p, h1=1, h2=1, N=10000):
 
     return MI
 
-    
-
-     
-
-
 if __name__ == "__main__":
     create_csv('MIs.csv')
     for snr in [0, 5.0, 10.0, 15.0]:
