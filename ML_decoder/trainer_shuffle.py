@@ -12,7 +12,7 @@ from keras.engine.topology import Layer
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-window = 50
+window = 40
 
 def loss_fn(y_true, y_pred):
     return 1/np.log(2) * keras.losses.binary_crossentropy(y_true, y_pred)
@@ -69,14 +69,14 @@ def CONV_Model(time_steps):
     model.add(Dense(1, activation='sigmoid'))
     return model
 
-def fit_model(X, Y, bs, nb_epoch, model):
+def fit_model(X, Y, X_val, Y_val, bs, nb_epoch, model):
     y = Y
 
     scale = 2
     it = len(X)*1.0/bs * scale
     decay = 1/it
 
-    class_weight = {0: 2., 1: 1.}
+    class_weight = {0: 2.0, 1: 1.}
 
 
     optim = keras.optimizers.Adam(lr=1e-3, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=decay, amsgrad=False)
@@ -89,21 +89,29 @@ def fit_model(X, Y, bs, nb_epoch, model):
     callbacks_list = [csv_logger]
 
     hist = model.fit(X, y, epochs=nb_epoch, batch_size=bs, class_weight=class_weight, verbose=1, validation_split=0.33, shuffle=True, callbacks=callbacks_list)
-    # l, acc, fp, fn = model.evaluate(X_val, Y_val, batch_size=bs)
-    # fp = fp * bs / len(X_val)
-    # fn = fn * bs / len(X_val)
-    # print(fp, fn)
-    return hist
+    p = model.predict(X_val, batch_size=bs)
+    p_0 = p[Y_val==0]
+    p_0 = np.sort(p_0.reshape(-1))
+    l = int(0.001 * len(p_0)) + 1
+    thresh = p_0[-l]
+    md = (l)*1.0/(len(p_0))
+    p_1 = p[Y_val==1]
+    false_alarms = np.sum(p_1<thresh)*1.0/(np.sum(Y_val==1))
+    print("false_alarms -> ", false_alarms, "mis_det -> ", md)
+    return false_alarms, md
 
 
 def plot_SNR():
-    SNRlist = [1.0, 5.0, 10.0, 15.0]
-    windowlist = [20, 40, 60]
+    create_csv('results_nn.csv')
+
+    SNRlist = [0.0, 5.0, 10.0, 15.0]
+    windowlist = [10, 20, 30, 40, 50]
     for snr in SNRlist:
         fprlist = []
         fnrlist = []
         for w in windowlist:
             X, Y, A = gen_and_process(p=0.5, SNR=snr, N=100000, window=w)
+            X_val, Y_val, A_val = gen_and_process(p=0.5, SNR=snr, N=50000, window=w)
             Y = Y[:, -1:]
             indices = np.arange(len(X))
             np.random.shuffle(indices)
@@ -113,15 +121,23 @@ def plot_SNR():
             A = A[indices]
 
             model = CONV_Model(time_steps=w)
-            h = fit_model(X, A, bs=512, nb_epoch=5, model=model)
-            fpr_min = np.min(h.history['val_fpr'])
-            fnr_min = np.min(h.history['val_fnr'])
-            fprlist.append(fpr_min)
-            fnrlist.append(fnr_min)
+
+            fa, md = fit_model(X, A,  X_val, A_val, bs=512, nb_epoch=5, model=model)
+            
+            fprlist.append(md)
+            fnrlist.append(fa)
+
+            res = [snr, w, 0.5, md, fa]
+
+            with open('results_nn.csv', 'a') as myFile:
+                writer = csv.writer(myFile)
+                writer.writerow(res)
+
         lab_md = "MD SNR = " + str(snr)
         lab_fa = "FAR SNR = " + str(snr)
         plt.plot(windowlist, fprlist, label=lab_md)
         plt.plot(windowlist, fnrlist, label=lab_fa)
+
     plt.xlabel("Window Sizes")
     plt.ylabel("Attack Detection Accuracy")
     plt.legend()
@@ -158,7 +174,7 @@ def main():
     # fit_model(X, Y, bs=512, nb_epoch=10, model=model)
 
     ## For Attack Detection
-    fit_model(X, A, bs=512, nb_epoch=10, model=model)
+    fit_model(X, A, X_val, A_val, bs=512, nb_epoch=10, model=model)
 
     # np.save('input_symbols', Y)
     # Y_cap = model.predict(X, batch_size=1024)

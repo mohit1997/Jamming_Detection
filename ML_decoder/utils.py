@@ -1,5 +1,14 @@
 import numpy as np
 from keras import backend as K
+import csv
+
+def create_csv(fname, header=None):
+    if header is None:
+        header = ["SNR", "Window", "Prob", "MD", "FAR"]
+
+    with open(fname, 'w') as myFile:
+        writer = csv.writer(myFile)
+        writer.writerow(header)
 
 def gen_data(p, SNR, N, A=1, h1=1.0, h2=1.0):
 	R = 10**(0.05*SNR)
