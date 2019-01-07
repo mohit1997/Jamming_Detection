@@ -89,23 +89,26 @@ def fit_model(X, Y, X_val, Y_val, bs, nb_epoch, model):
     callbacks_list = [csv_logger]
 
     hist = model.fit(X, y, epochs=nb_epoch, batch_size=bs, class_weight=class_weight, verbose=1, validation_split=0.33, shuffle=True, callbacks=callbacks_list)
+
+
+    thresh = get_threshold(model, X, Y, bs)
+
     p = model.predict(X_val, batch_size=bs)
+
     p_0 = p[Y_val==0]
-    p_0 = np.sort(p_0.reshape(-1))
-    l = int(0.001 * len(p_0)) + 1
-    thresh = p_0[-l]
-    md = (l)*1.0/(len(p_0))
+    md = np.sum(p_0>thresh)*1.0/(np.sum(Y_val==0))
+    
     p_1 = p[Y_val==1]
-    false_alarms = np.sum(p_1<thresh)*1.0/(np.sum(Y_val==1))
-    print("false_alarms -> ", false_alarms, "mis_det -> ", md)
-    return false_alarms, md
+    fa = np.sum(p_1<thresh)*1.0/(np.sum(Y_val==1))
+    print("false_alarms -> ", fa, "mis_det -> ", md)
+    return fa, md
 
 
-def plot_SNR():
-    create_csv('results_nn.csv')
+def plot_SNR(fname):
+    create_csv(fname)
 
     SNRlist = [0.0, 5.0, 10.0, 15.0]
-    windowlist = [10, 20, 30, 40, 50]
+    windowlist = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for snr in SNRlist:
         fprlist = []
         fnrlist = []
@@ -122,14 +125,14 @@ def plot_SNR():
 
             model = CONV_Model(time_steps=w)
 
-            fa, md = fit_model(X, A,  X_val, A_val, bs=512, nb_epoch=5, model=model)
+            fa, md = fit_model(X, A, X_val, A_val, bs=512, nb_epoch=8, model=model)
             
             fprlist.append(md)
             fnrlist.append(fa)
 
             res = [snr, w, 0.5, md, fa]
 
-            with open('results_nn.csv', 'a') as myFile:
+            with open(fname, 'a') as myFile:
                 writer = csv.writer(myFile)
                 writer.writerow(res)
 
@@ -184,4 +187,4 @@ def main():
 
 if __name__ == "__main__":
 	# main()
-    plot_SNR()
+    plot_SNR(fname='results_nn.csv')
