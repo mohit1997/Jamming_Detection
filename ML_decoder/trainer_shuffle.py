@@ -104,9 +104,8 @@ def fit_model(X, Y, X_val, Y_val, bs, nb_epoch, model):
     return fa, md
 
 
-def plot_SNR(fname):
+def plot_SNR(fname, p):
     create_csv(fname)
-    p = 0.4
     SNRlist = [0.0]
     windowlist = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for snr in SNRlist:
@@ -187,4 +186,5 @@ def main():
 
 if __name__ == "__main__":
 	# main()
-    plot_SNR(fname='results_nn0.4.csv')
+    plot_SNR(fname='results_nn0.2.csv', p=0.2)
+    plot_SNR(fname='results_nn0.1.csv', p=0.1)

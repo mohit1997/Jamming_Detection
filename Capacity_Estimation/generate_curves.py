@@ -10,7 +10,7 @@ def get_MIs(df, snr, p):
 df_MINE = pd.read_csv('results_mine.csv')
 df_MINE = df_MINE.sort_values(['window'])
 
-df_nn = pd.read_csv('results_nn.csv')
+df_nn = pd.read_csv('results_nn0.1.csv')
 df_nn = df_nn.sort_values(['window'])
 print(df_nn)
 
@@ -22,7 +22,7 @@ MINE_mi_list = []
 NN_mi_list = []
 
 for i in snrs:
-	I1, I2 = get_MIs(true_df, i, 0.5)
+	I1, I2 = get_MIs(true_df, i, 0.1)
 
 	temp = df_nn.loc[df_nn['SNR'] == i]
 	lab = "MI NN - SNR=" + str(i)
