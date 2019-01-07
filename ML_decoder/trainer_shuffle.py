@@ -106,15 +106,15 @@ def fit_model(X, Y, X_val, Y_val, bs, nb_epoch, model):
 
 def plot_SNR(fname):
     create_csv(fname)
-
-    SNRlist = [0.0, 5.0, 10.0, 15.0]
+    p = 0.4
+    SNRlist = [0.0]
     windowlist = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for snr in SNRlist:
         fprlist = []
         fnrlist = []
         for w in windowlist:
-            X, Y, A = gen_and_process(p=0.5, SNR=snr, N=100000, window=w)
-            X_val, Y_val, A_val = gen_and_process(p=0.5, SNR=snr, N=50000, window=w)
+            X, Y, A = gen_and_process(p=p, SNR=snr, N=100000, window=w)
+            X_val, Y_val, A_val = gen_and_process(p=p, SNR=snr, N=50000, window=w)
             Y = Y[:, -1:]
             indices = np.arange(len(X))
             np.random.shuffle(indices)
@@ -130,7 +130,7 @@ def plot_SNR(fname):
             fprlist.append(md)
             fnrlist.append(fa)
 
-            res = [snr, w, 0.5, md, fa]
+            res = [snr, w, p, md, fa]
 
             with open(fname, 'a') as myFile:
                 writer = csv.writer(myFile)
@@ -187,4 +187,4 @@ def main():
 
 if __name__ == "__main__":
 	# main()
-    plot_SNR(fname='results_nn.csv')
+    plot_SNR(fname='results_nn0.4.csv')
