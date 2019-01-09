@@ -34,13 +34,13 @@ def gen_data(p, SNR, N, A=1, h1=1.0, h2=1.0):
     scalefactor1 = pwrx/pwrz1/R
     scalefactor2 = pwrx/pwrz2/R
 
-    y1 = x + unscaled_z1*scalefactor1
+    y1 = h1*x + unscaled_z1*scalefactor1
     if A==1:
-        y2 = np.multiply(x, b) + unscaled_z2*scalefactor2/h1
+        y2 = h2*np.multiply(x, b) + unscaled_z2*scalefactor2
     else:
-        y2 = x + unscaled_z2*scalefactor2/h1
+        y2 = h2*x + unscaled_z2*scalefactor2
 
-    y = np.concatenate([y1, y2], axis=1)/h2
+    y = np.concatenate([y1, y2], axis=1)
 
     return x, y
 
@@ -64,11 +64,11 @@ def preprocess(inp, out, window):
 
     return X, Y
 
-def gen_and_process(p, SNR, N, window):
-    inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=1)
+def gen_and_process(p, SNR, N, window, h1=1.0, h2=1.0):
+    inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=1, h1=h1, h2=h2)
     X_attack, Y_attack = preprocess(inp_symbols, out_symbols, window=window)
 
-    inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=0)
+    inp_symbols, out_symbols = gen_data(p=p, SNR=SNR, N=N, A=0, h1=h1, h2=h2)
     X_noattack, Y_noattack = preprocess(inp_symbols, out_symbols, window=window)
 
     zeros = np.zeros((len(X_attack), 1))

@@ -38,7 +38,6 @@ def get_min_threshold(l1, l2):
     lis = np.sort(l1)
     num = int(len(l1)*0.001) + 1
     print("Threshold Index ", num)
-    print(lis)
     thresh = lis[-num]
 
     return thresh
@@ -81,15 +80,18 @@ def main(args):
     prob = args.prob
     snr = args.snr
     window = args.window
+    fname = args.fname
+    h1 = 1.5
+    h2 = 0.5
     test_points = 10000
-    X, Y1, Y2 = gen_data(p=prob, SNR=snr, N=100000, A=1)
+    X, Y1, Y2 = gen_data(p=prob, SNR=snr, N=100000, A=1, h1=h1, h2=h2)
 
     ### Get MI
     mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel())[0]
     print(mi_numerical, " during attack")
     mia = mi_numerical
 
-    X, Y1, Y2 = gen_data(p=prob, SNR=snr, N=100000, A=0)
+    X, Y1, Y2 = gen_data(p=prob, SNR=snr, N=100000, A=0, h1=h1, h2=h2)
 
     ### Get MI
     mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel())[0]
@@ -117,12 +119,9 @@ def main(args):
         # generate the data
         # x_sample=gen_x()
         # y_sample=gen_y(x_sample)
-        _, Y1A, Y2A = gen_data(p=prob, SNR=snr, N=window, A=1)
-        Y1A = Y1A.reshape(-1, 1)
-        Y2A = Y2A.reshape(-1, 1)
-        _, Y1NA, Y2NA = gen_data(p=prob, SNR=snr, N=window, A=0)
-        Y1NA = Y1NA.reshape(-1, 1)
-        Y2NA = Y2NA.reshape(-1, 1)
+        _, Y1A, Y2A = gen_data(p=prob, SNR=snr, N=window, A=1, h1=h1, h2=h2)
+        
+        _, Y1NA, Y2NA = gen_data(p=prob, SNR=snr, N=window, A=0, h1=h1, h2=h2)
 
         Y1 = np.concatenate([Y1A, Y1NA], axis=0)
         Y2 = np.concatenate([Y2A, Y2NA], axis=0)
@@ -131,9 +130,7 @@ def main(args):
         _, neg_l = sess.run([opt, neg_loss], feed_dict=feed_dict)
         
         # save the loss
-        _, Y1, Y2 = gen_data(p=prob, SNR=snr, N=window, A=1)
-        Y1 = Y1.reshape(-1, 1)
-        Y2 = Y2.reshape(-1, 1)
+        _, Y1, Y2 = gen_data(p=prob, SNR=snr, N=window, A=1, h1=h1, h2=h2)
         
         # perform the training step
         feed_dict = {x_in:Y1, y_in:Y2, is_train: False, learning_rate: lr(epoch)}
@@ -142,9 +139,7 @@ def main(args):
         # save the loss
         MIAs.append(-neg_l)
 
-        _, Y1, Y2 = gen_data(p=prob, SNR=snr, N=window, A=0)
-        Y1 = Y1.reshape(-1, 1)
-        Y2 = Y2.reshape(-1, 1)
+        _, Y1, Y2 = gen_data(p=prob, SNR=snr, N=window, A=0, h1=h1, h2=h2)
         
         # perform the training step
         feed_dict = {x_in:Y1, y_in:Y2, is_train: False, learning_rate: lr(epoch)}
@@ -181,7 +176,7 @@ def main(args):
     false_alrams = 0
 
     for i in range(test_points):
-        _, valY1, valY2 = gen_data(p=prob, SNR=snr, N=window, A=0)
+        _, valY1, valY2 = gen_data(p=prob, SNR=snr, N=window, A=0, h1=h1, h2=h2)
         feed_dict = {x_in:valY1, y_in:valY2, is_train: False}
         neg_l, = sess.run([neg_loss], feed_dict=feed_dict)
         MI = -neg_l
@@ -189,7 +184,7 @@ def main(args):
         if MI < thresh:
             false_alrams += 1
 
-        _, valY1, valY2 = gen_data(p=prob, SNR=snr, N=window, A=1)
+        _, valY1, valY2 = gen_data(p=prob, SNR=snr, N=window, A=1, h1=h1, h2=h2)
         feed_dict = {x_in:valY1, y_in:valY2, is_train: False}
         neg_l, = sess.run([neg_loss], feed_dict=feed_dict)
         MI = -neg_l
@@ -200,18 +195,20 @@ def main(args):
     MR = misdetections*1.0 / test_points
     FAR = false_alrams*1.0 / test_points
 
-    name = "gen_MI/MIA-snr" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
+    name = "gen_MI_unique/MIA-snr" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
     np.save(name, np.array(MIAs))
-    name = "gen_MI/MINA-snr" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
+    name = "gen_MI_unique/MINA-snr" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
     np.save(name, np.array(MINAs))
 
-    output = "SNR=" + str(snr) + " window=" + str(window) + " prob=" + str(prob) + " MR=" + str(MR) + " FAR" + str(FAR)
+    output = "SNR=" + str(snr) + " window=" + str(window) + " prob=" + str(prob) + " MD=" + str(MR) + " FAR" + str(FAR)
 
     print(output)
     res = [snr, window, prob, MR, FAR]
 
-    
-    with open('results_md.csv', 'a') as myFile:
+    if not os.path.isfile(fname):
+        create_csv(fname)
+
+    with open(fname, 'a') as myFile:
         writer = csv.writer(myFile)
         writer.writerow(res)
 
@@ -229,6 +226,9 @@ if __name__ == "__main__":
     parser.add_argument('-w', action='store', type=int, default=50,
                         dest='window',
                         help='window size')
+    parser.add_argument('-csv', action='store',
+                        dest='fname',
+                        help='Name of CSV to save results')
     arguments = parser.parse_args()
     print(arguments)
     main(arguments)

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from utils import *
 
 def Iy1(snr, p, h1=1, N=10000):
-    std = h1 * np.sqrt(4*p*(1-p)) / 10**(0.05*snr)
+    std = np.sqrt(4*p*(1-p)) / 10**(0.05*snr)
 
     def Py1_na(p, std, h1):
         return lambda x: p * gaussian(-h1, std)(x) + (1-p) * gaussian(h1, std)(x)
@@ -37,8 +37,8 @@ def Iy1(snr, p, h1=1, N=10000):
     return MI
 
 def Iy1y2(snr, p, h1=1, h2=1, N=10000):
-    std1 = h1 * np.sqrt(4*p*(1-p)) / 10**(0.05*snr)
-    std2 = h2 * np.sqrt(4*p*(1-p)) / 10**(0.05*snr)
+    std1 = np.sqrt(4*p*(1-p)) / 10**(0.05*snr)
+    std2 = np.sqrt(4*p*(1-p)) / 10**(0.05*snr)
 
     std_eff = np.sqrt(h1**2 * std1**2 + h2**2 * std2**2)
 
