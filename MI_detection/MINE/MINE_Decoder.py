@@ -83,6 +83,7 @@ def main(args):
     fname = args.fname
     h1 = 1.5
     h2 = 0.5
+    bs = 256
     test_points = 10000
     X, Y1, Y2 = gen_data(p=prob, SNR=snr, N=100000, A=1, h1=h1, h2=h2)
 
@@ -119,9 +120,9 @@ def main(args):
         # generate the data
         # x_sample=gen_x()
         # y_sample=gen_y(x_sample)
-        _, Y1A, Y2A = gen_data(p=prob, SNR=snr, N=window, A=1, h1=h1, h2=h2)
+        _, Y1A, Y2A = gen_data(p=prob, SNR=snr, N=bs, A=1, h1=h1, h2=h2)
         
-        _, Y1NA, Y2NA = gen_data(p=prob, SNR=snr, N=window, A=0, h1=h1, h2=h2)
+        _, Y1NA, Y2NA = gen_data(p=prob, SNR=snr, N=bs, A=0, h1=h1, h2=h2)
 
         Y1 = np.concatenate([Y1A, Y1NA], axis=0)
         Y2 = np.concatenate([Y2A, Y2NA], axis=0)
@@ -223,7 +224,7 @@ if __name__ == "__main__":
     parser.add_argument('-p', action='store', type=int, default=0.5,
                         dest='prob',
                         help='choose input probability')
-    parser.add_argument('-w', action='store', type=int, default=50,
+    parser.add_argument('-w', action='store', type=int, default=10,
                         dest='window',
                         help='window size')
     parser.add_argument('-csv', action='store',
