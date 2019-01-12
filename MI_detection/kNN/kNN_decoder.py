@@ -42,7 +42,9 @@ def main(args):
     fname = args.fname
     h1 = 1.0
     h2 = 1.0
-    test_points = 10000
+    test_points = 50000
+    k=args.k_parameter
+
     X, Y1, Y2 = gen_data(p=prob, SNR=snr, N=100000, A=1, h1=h1, h2=h2)
 
     ### Get MI
@@ -66,14 +68,14 @@ def main(args):
         _, Y1, Y2 = gen_data(p=prob, SNR=snr, N=window, A=1, h1=h1, h2=h2)
         
         # Calculate MI
-        mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel())[0]
+        mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel(), n_neighbors=k)[0]
         # save MI
         MIAs.append(mi_numerical)
 
         _, Y1, Y2 = gen_data(p=prob, SNR=snr, N=window, A=0, h1=h1, h2=h2)
         
         # Calculate MI
-        mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel())[0]
+        mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel(), n_neighbors=k)[0]
         # save the loss
         MINAs.append(mi_numerical)
 
@@ -92,7 +94,7 @@ def main(args):
     ax.legend(loc='best')
     title = "SNR=" + str(snr) + "window=" + str(window) + "prob=" + str(prob)
     ax.set_title(title)
-    path = "figs_md/MINE_shuffled" + title + ".png"
+    path = "figs_md/kNN_shuffled" + title + ".png"
     fig.savefig(path)
     fig.show()
 
@@ -101,13 +103,13 @@ def main(args):
 
     for i in range(test_points):
         _, valY1, valY2 = gen_data(p=prob, SNR=snr, N=window, A=0, h1=h1, h2=h2)
-        MI = mi_numerical = mutual_info_regression(valY1.reshape(-1, 1), valY2.ravel())[0]
+        MI = mi_numerical = mutual_info_regression(valY1.reshape(-1, 1), valY2.ravel(), n_neighbors=k)[0]
         MINAs.append(MI)
         if MI < thresh:
             false_alrams += 1
 
         _, valY1, valY2 = gen_data(p=prob, SNR=snr, N=window, A=1, h1=h1, h2=h2)
-        MI = mi_numerical = mutual_info_regression(valY1.reshape(-1, 1), valY2.ravel())[0]
+        MI = mi_numerical = mutual_info_regression(valY1.reshape(-1, 1), valY2.ravel(), n_neighbors=k)[0]
         MIAs.append(MI)
         if MI > thresh:
             misdetections += 1
@@ -145,6 +147,9 @@ if __name__ == "__main__":
     parser.add_argument('-w', action='store', type=int, default=100,
                         dest='window',
                         help='window size')
+    parser.add_argument('-k', action='store', type=int, default=3,
+                        dest='k_parameter',
+                        help='k in KNN MI algo')
     parser.add_argument('-csv', action='store',
                         dest='fname',
                         help='Name of CSV to save results')

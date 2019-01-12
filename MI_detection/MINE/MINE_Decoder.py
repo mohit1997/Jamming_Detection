@@ -218,13 +218,13 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-snr', action='store', type=int, default=0,
+    parser.add_argument('-snr', action='store', type=int, default=5,
                         dest='snr',
                         help='choose sequence file')
     parser.add_argument('-p', action='store', type=int, default=0.5,
                         dest='prob',
                         help='choose input probability')
-    parser.add_argument('-w', action='store', type=int, default=10,
+    parser.add_argument('-w', action='store', type=int, default=20,
                         dest='window',
                         help='window size')
     parser.add_argument('-csv', action='store',

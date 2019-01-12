@@ -50,7 +50,7 @@ def MINE(x_in, y_in, is_train, H, lr):
 
 def main():
     ### Generate Data
-    X, Y1, Y2 = gen_data(p=0.5, SNR=10.0, N=100000, A=0)
+    X, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100000, A=1)
 
     ### Get MI
     mi_numerical = mutual_info_regression(Y1.reshape(-1, 1), Y2.ravel())[0]
@@ -75,19 +75,21 @@ def main():
 
     # train
     MIs = []
-    _, Y1, Y2 = gen_data(p=0.5, SNR=10.0, N=100, A=0)
-    Y1 = Y1.reshape(-1, 1)
-    Y2 = Y2.reshape(-1, 1)
+    _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100, A=1)
     indices = np.arange(len(Y1))
     for epoch in range(n_epochs):
-        np.random.shuffle(indices)
+        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=100, A=0)
+        # np.random.shuffle(indices)
         # generate the data
         # x_sample=gen_x()
         # y_sample=gen_y(x_sample)
         # perform the training step
-        feed_dict = {x_in:Y1, y_in:Y2, is_train: True, learning_rate: lr(epoch)}
+        feed_dict = {x_in:Y1, y_in:Y2, is_train: False, learning_rate: lr(epoch)}
         _, neg_l = sess.run([opt, neg_loss], feed_dict=feed_dict)
         
+        _, Y1, Y2 = gen_data(p=0.5, SNR=0.0, N=10, A=1)
+        feed_dict = {x_in:Y1, y_in:Y2, is_train: False, learning_rate: lr(epoch)}
+        neg_l, = sess.run([neg_loss], feed_dict=feed_dict)
         # save the loss
         MIs.append(-neg_l)
 
