@@ -50,8 +50,10 @@ for i in [0, 5]:
 	index += 1
 
 plt.xlabel('Frame Lengths ($n\'$)', fontsize=12)
-plt.ylabel('Achievable Rate', fontsize=12)
+plt.ylabel('Approximate Rate', fontsize=12)
 plt.legend(loc='right', fontsize=10)
 plt.grid()
-plt.savefig('ComparisionFinal.png')
+plt.tight_layout()
+# plt.savefig('ComparisionFinal.png')
+plt.savefig('ComparisionFinal.pdf')
 plt.show()
